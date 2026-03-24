@@ -13,9 +13,9 @@ const INSTRUMENTS = [
 
 // Groupes d'instruments pour le sélecteur de jeu.
 // Surdo 1+2     = 1 bouton, 2 colonnes (S1 gauche, S2 droite)
-// Surdo 3 D+G   = 1 bouton, 2 colonnes (D gauche, G droite)
-// Caixa D+G     = 1 bouton, 2 colonnes (D gauche, G droite)
-// Repinique D+G = 1 bouton, 2 colonnes (D gauche, G droite)
+// Surdo 3 D+G   = 1 bouton, 2 colonnes (G gauche, D droite)
+// Caixa D+G     = 1 bouton, 2 colonnes (G gauche, D droite)
+// Repinique D+G = 1 bouton, 2 colonnes (G gauche, D droite)
 // Agogô ↓+↑    = 1 bouton, 2 colonnes (↓ gauche, ↑ droite)
 const INSTRUMENT_GROUPS = [
   {
@@ -29,21 +29,21 @@ const INSTRUMENT_GROUPS = [
     id: 'surdo3',
     name: 'Surdo 3',
     shortName: 'S3',
-    lanes: [2, 7],          // D (col gauche), G (col droite)
+    lanes: [7, 2],          // G (col gauche), D (col droite)
     color: '#f1c40f',
   },
   {
     id: 'caixa',
     name: 'Caixa',
     shortName: 'CX',
-    lanes: [3, 8],          // D (col gauche), G (col droite)
+    lanes: [8, 3],          // G (col gauche), D (col droite)
     color: '#2ecc71',
   },
   {
     id: 'repinique',
     name: 'Repinique',
     shortName: 'RP',
-    lanes: [4, 9],          // D (col gauche), G (col droite)
+    lanes: [9, 4],          // G (col gauche), D (col droite)
     color: '#3498db',
   },
   {

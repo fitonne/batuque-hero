@@ -141,6 +141,7 @@ const App = (() => {
 
   async function init() {
     await Storage.init();
+    seedDefaultData();
     await Audio.loadAllSounds();
     Editor.initEvents();
     Arrangement.initEvents();

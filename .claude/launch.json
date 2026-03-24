@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "Batuque Hero (static)",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["serve.js"],
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

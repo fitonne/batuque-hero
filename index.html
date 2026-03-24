@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0d14">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Batuque Hero</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="public-mode">
+
+  <!-- ===== Navigation ===== -->
+  <nav id="nav">
+    <button class="nav-btn active" data-screen="home">
+      <span class="nav-icon">🏠</span>
+      Accueil
+    </button>
+    <button class="nav-btn admin-only" data-screen="editor">
+      <span class="nav-icon">✏️</span>
+      Loops
+    </button>
+    <button class="nav-btn admin-only" data-screen="arrangement">
+      <span class="nav-icon">🎼</span>
+      Arrange
+    </button>
+    <button class="nav-btn admin-only" data-screen="sounds">
+      <span class="nav-icon">🔊</span>
+      Sons
+    </button>
+  </nav>
+
+  <!-- ===== Bannière Admin ===== -->
+  <div id="admin-banner" class="admin-only">
+    <span>🔓 Mode Admin</span>
+    <button id="btn-lock" class="btn-lock">Verrouiller</button>
+  </div>
+
+  <!-- ===== Accueil ===== -->
+  <div id="screen-home" class="screen">
+    <div class="home-header">
+      <div>
+        <h1 class="app-title">🥁 Batuque Hero</h1>
+        <p class="app-subtitle">Apprends tes rythmes de batucada</p>
+      </div>
+      <!-- Bouton discret d'accès admin (mode public uniquement) -->
+      <button id="btn-open-pin" class="btn-pin-access public-only" title="Accès Admin">🔒</button>
+    </div>
+
+    <div class="home-section admin-only" id="loops-section">
+      <div class="home-section-header">
+        <h2 class="home-section-title">🎵 Loops</h2>
+        <button id="btn-new-rhythm" class="btn-sm btn-success">+ Nouveau</button>
+      </div>
+      <div id="rhythm-list"></div>
+    </div>
+
+    <div class="home-section">
+      <div class="home-section-header">
+        <h2 class="home-section-title">🎼 Rythmes</h2>
+        <button id="btn-new-arrangement" class="btn-sm btn-success admin-only">+ Nouveau</button>
+      </div>
+      <div id="arrangement-list"></div>
+    </div>
+  </div>
+
+  <!-- ===== Éditeur de loops ===== -->
+  <div id="screen-editor" class="screen admin-only">
+    <div id="editor-toolbar">
+      <input type="text" id="rhythm-name" placeholder="Nom du loop..." maxlength="40">
+      <div class="toolbar-row">
+        <span class="toolbar-label">Tempo</span>
+        <input type="range" id="bpm-slider" min="40" max="220" value="100">
+        <span class="toolbar-value"><span id="bpm-display">100</span> BPM</span>
+      </div>
+      <div class="toolbar-row">
+        <span class="toolbar-label">Mesures</span>
+        <select id="measures-select">
+          <option value="1">1</option>
+          <option value="2" selected>2</option>
+          <option value="4">4</option>
+          <option value="8">8</option>
+        </select>
+        <span class="toolbar-label" style="margin-left:8px">Division</span>
+        <select id="subdivision-select">
+          <option value="8">8ème</option>
+          <option value="16" selected>16ème</option>
+          <option value="32">32ème</option>
+          <option value="12">Triolet (÷3)</option>
+          <option value="24">Sextolet (÷6)</option>
+        </select>
+      </div>
+      <div class="toolbar-row">
+        <button id="btn-play-editor" class="btn-sm">▶ Écouter</button>
+        <button id="btn-save-rhythm" class="btn-sm btn-success">💾 Sauvegarder</button>
+        <button id="btn-clear-editor" class="btn-sm btn-danger">🗑 Effacer</button>
+      </div>
+    </div>
+    <div id="editor-grid-wrapper">
+      <div id="editor-grid"></div>
+    </div>
+  </div>
+
+  <!-- ===== Éditeur d'arrangement ===== -->
+  <div id="screen-arrangement-editor" class="screen admin-only">
+    <div id="arr-toolbar">
+      <input type="text" id="arr-name" placeholder="Nom de l'arrangement..." maxlength="40">
+      <div class="toolbar-row">
+        <span class="toolbar-label">Tempo</span>
+        <input type="range" id="arr-bpm-slider" min="40" max="220" value="100">
+        <span class="toolbar-value"><span id="arr-bpm-display">100</span> BPM</span>
+      </div>
+      <div class="toolbar-row">
+        <span class="toolbar-label">Case</span>
+        <select id="arr-cell-size">
+          <option value="1">1 mes.</option>
+          <option value="2" selected>2 mes.</option>
+          <option value="4">4 mes.</option>
+          <option value="8">8 mes.</option>
+        </select>
+        <span class="toolbar-label" style="margin-left:8px">Cases</span>
+        <select id="arr-total-cells">
+          <option value="4">4</option>
+          <option value="8" selected>8</option>
+          <option value="12">12</option>
+          <option value="16">16</option>
+          <option value="24">24</option>
+          <option value="32">32</option>
+        </select>
+      </div>
+      <div class="toolbar-row">
+        <button id="btn-arr-play" class="btn-sm">▶ Écouter</button>
+        <button id="btn-arr-save" class="btn-sm btn-success">💾 Sauvegarder</button>
+      </div>
+    </div>
+    <div id="arr-grid-wrapper">
+      <div id="arr-playhead"></div>
+      <div id="arr-grid"></div>
+    </div>
+    <!-- Picker de loop -->
+    <div id="arr-loop-picker" class="hidden">
+      <div id="arr-picker-overlay"></div>
+      <div id="arr-picker-sheet">
+        <div class="picker-header">
+          <h3 id="arr-picker-title">Choisir un loop</h3>
+          <button id="btn-arr-close-picker" class="btn-icon">✕</button>
+        </div>
+        <div id="arr-picker-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Arrangement (placeholder nav) ===== -->
+  <div id="screen-arrangement" class="screen admin-only"></div>
+
+  <!-- ===== Sons ===== -->
+  <div id="screen-sounds" class="screen admin-only">
+    <h2>🔊 Mes sons</h2>
+    <div id="sounds-list"></div>
+    <!-- Changer le PIN -->
+    <div class="pin-change-section">
+      <h3>🔐 Code Admin</h3>
+      <p>PIN actuel : <span id="pin-display">••••</span></p>
+      <button id="btn-change-pin" class="btn-sm btn-success">Changer le PIN</button>
+    </div>
+  </div>
+
+  <!-- ===== Choix instruments (avant jeu) ===== -->
+  <div id="screen-game-setup" class="screen">
+    <div class="game-setup-info">
+      <span id="game-setup-type" class="game-setup-badge">🎵 Loop</span>
+      <h2 id="game-setup-title"></h2>
+    </div>
+    <p>Choisis les instruments que tu veux jouer :<br>
+      <small style="color:var(--text-dim)">Les autres jouent automatiquement</small>
+    </p>
+    <div id="instrument-selector"></div>
+    <div class="setup-speed-box">
+      <label>🎚️ Vitesse <strong><span id="speed-display">100</span>%</strong></label>
+      <input type="range" id="speed-slider" min="25" max="100" value="100" step="25">
+      <div style="display:flex;justify-content:space-between;font-size:0.7em;color:var(--text-dim);margin-top:4px">
+        <span>🐢 25%</span><span>50%</span><span>75%</span><span>🔥 100%</span>
+      </div>
+    </div>
+    <button id="btn-start-game" class="btn-primary">▶ JOUER !</button>
+    <button id="btn-back-home" class="btn-secondary">← Retour</button>
+  </div>
+
+  <!-- ===== Jeu ===== -->
+  <div id="screen-game" class="screen" style="position:relative;">
+    <div id="game-hud">
+      <span id="game-score">Score : 0</span>
+      <span id="game-feedback"></span>
+      <span id="game-combo"></span>
+    </div>
+    <canvas id="game-canvas"></canvas>
+    <div id="game-buttons"></div>
+    <div id="game-over" class="hidden">
+      <h2>Bravo !</h2>
+      <div id="final-score"></div>
+      <button id="btn-replay" class="btn-primary" style="max-width:280px">🔁 Rejouer</button>
+      <button id="btn-exit-game" class="btn-secondary" style="max-width:280px">← Menu principal</button>
+    </div>
+  </div>
+
+  <!-- ===== Modal PIN ===== -->
+  <div id="pin-modal" class="hidden">
+    <div id="pin-overlay"></div>
+    <div id="pin-sheet">
+      <h3 id="pin-modal-title">🔐 Code Admin</h3>
+      <p id="pin-modal-subtitle">Entre le code pour accéder à l'administration</p>
+
+      <div id="pin-dots">
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+        <span class="pin-dot"></span>
+      </div>
+      <p id="pin-error">Code incorrect !</p>
+
+      <div id="pin-keypad">
+        <button class="pin-key" data-digit="1">1</button>
+        <button class="pin-key" data-digit="2">2</button>
+        <button class="pin-key" data-digit="3">3</button>
+        <button class="pin-key" data-digit="4">4</button>
+        <button class="pin-key" data-digit="5">5</button>
+        <button class="pin-key" data-digit="6">6</button>
+        <button class="pin-key" data-digit="7">7</button>
+        <button class="pin-key" data-digit="8">8</button>
+        <button class="pin-key" data-digit="9">9</button>
+        <button class="pin-key pin-key-action" id="pin-backspace">⌫</button>
+        <button class="pin-key" data-digit="0">0</button>
+        <button class="pin-key pin-key-action" id="pin-cancel">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/instruments.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/arrangement.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

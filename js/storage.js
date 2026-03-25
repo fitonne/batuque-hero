@@ -1,10 +1,42 @@
 const Storage = (() => {
-  const RHYTHMS_KEY = 'batuque_rhythms';
+  const FB_URL = 'https://batuque-hero-default-rtdb.europe-west1.firebasedatabase.app';
   const SOUND_META_KEY = 'batuque_sound_meta';
   let db = null;
 
+  // Cache local (chargé depuis Firebase au démarrage)
+  let rhythmsCache = [];
+  let arrangementsCache = [];
+
+  // ── Helpers Firebase REST ────────────────────────────────────────────────
+
+  async function fbGet(path) {
+    try {
+      const res = await fetch(`${FB_URL}/${path}.json`);
+      return res.ok ? await res.json() : null;
+    } catch { return null; }
+  }
+
+  async function fbSet(path, data) {
+    try {
+      await fetch(`${FB_URL}/${path}.json`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    } catch (e) { console.warn('Firebase write:', e); }
+  }
+
+  async function fbDelete(path) {
+    try {
+      await fetch(`${FB_URL}/${path}.json`, { method: 'DELETE' });
+    } catch (e) { console.warn('Firebase delete:', e); }
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────
+
   async function init() {
-    return new Promise((resolve, reject) => {
+    // IndexedDB pour les sons
+    await new Promise((resolve, reject) => {
       const req = indexedDB.open('BatuqueHeroDB', 2);
       req.onupgradeneeded = e => {
         const d = e.target.result;
@@ -15,33 +47,68 @@ const Storage = (() => {
       req.onsuccess = e => { db = e.target.result; resolve(); };
       req.onerror = e => reject(e);
     });
+
+    // Charge les rythmes depuis Firebase
+    const rhythmsData = await fbGet('rhythms');
+    rhythmsCache = rhythmsData ? Object.values(rhythmsData) : [];
+
+    // Charge les arrangements depuis Firebase
+    const arrangementsData = await fbGet('arrangements');
+    arrangementsCache = arrangementsData ? Object.values(arrangementsData) : [];
+
+    // Seed des rythmes par défaut si la base est vide
+    if (rhythmsCache.length === 0 && typeof DEFAULT_RHYTHMS !== 'undefined') {
+      for (const r of DEFAULT_RHYTHMS) {
+        await fbSet(`rhythms/${r.id}`, r);
+      }
+      rhythmsCache = [...DEFAULT_RHYTHMS];
+    }
   }
 
-  // --- Rythmes ---
-  function getRhythms() {
-    try { return JSON.parse(localStorage.getItem(RHYTHMS_KEY)) || []; }
-    catch { return []; }
-  }
+  // ── Rythmes ──────────────────────────────────────────────────────────────
+
+  function getRhythms() { return rhythmsCache; }
 
   function saveRhythm(rhythm) {
-    const list = getRhythms();
     if (!rhythm.id) rhythm.id = Date.now().toString();
-    const idx = list.findIndex(r => r.id === rhythm.id);
-    if (idx >= 0) list[idx] = rhythm; else list.push(rhythm);
-    localStorage.setItem(RHYTHMS_KEY, JSON.stringify(list));
+    const idx = rhythmsCache.findIndex(r => r.id === rhythm.id);
+    if (idx >= 0) rhythmsCache[idx] = rhythm; else rhythmsCache.push(rhythm);
+    fbSet(`rhythms/${rhythm.id}`, rhythm);
     return rhythm;
   }
 
   function deleteRhythm(id) {
-    const list = getRhythms().filter(r => r.id !== id);
-    localStorage.setItem(RHYTHMS_KEY, JSON.stringify(list));
+    rhythmsCache = rhythmsCache.filter(r => r.id !== id);
+    fbDelete(`rhythms/${id}`);
   }
 
   function getRhythm(id) {
-    return getRhythms().find(r => r.id === id) || null;
+    return rhythmsCache.find(r => r.id === id) || null;
   }
 
-  // --- Métadonnées des sons ---
+  // ── Arrangements ─────────────────────────────────────────────────────────
+
+  function getArrangements() { return arrangementsCache; }
+
+  function saveArrangement(arr) {
+    if (!arr.id) arr.id = 'arr_' + Date.now();
+    const idx = arrangementsCache.findIndex(a => a.id === arr.id);
+    if (idx >= 0) arrangementsCache[idx] = arr; else arrangementsCache.push(arr);
+    fbSet(`arrangements/${arr.id}`, arr);
+    return arr;
+  }
+
+  function deleteArrangement(id) {
+    arrangementsCache = arrangementsCache.filter(a => a.id !== id);
+    fbDelete(`arrangements/${id}`);
+  }
+
+  function getArrangement(id) {
+    return arrangementsCache.find(a => a.id === id) || null;
+  }
+
+  // ── Métadonnées des sons (reste en local) ────────────────────────────────
+
   function getSoundMeta() {
     try { return JSON.parse(localStorage.getItem(SOUND_META_KEY)) || {}; }
     catch { return {}; }
@@ -55,7 +122,15 @@ const Storage = (() => {
     return getSoundMeta()[instrumentId] || [];
   }
 
-  // --- Sons (blobs dans IndexedDB) ---
+  function updateSoundName(instrumentId, index, name) {
+    const meta = getSoundMeta();
+    if (!meta[instrumentId]) meta[instrumentId] = [];
+    meta[instrumentId][index] = name;
+    setSoundMeta(meta);
+  }
+
+  // ── Sons (blobs dans IndexedDB, restent en local) ─────────────────────────
+
   function soundKey(instrumentId, index) {
     return `${instrumentId}_${index}`;
   }
@@ -97,39 +172,6 @@ const Storage = (() => {
       meta[instrumentId].splice(index, 1);
       setSoundMeta(meta);
     }
-  }
-
-  function updateSoundName(instrumentId, index, name) {
-    const meta = getSoundMeta();
-    if (!meta[instrumentId]) meta[instrumentId] = [];
-    meta[instrumentId][index] = name;
-    setSoundMeta(meta);
-  }
-
-  // --- Arrangements ---
-  const ARRANGEMENTS_KEY = 'batuque_arrangements';
-
-  function getArrangements() {
-    try { return JSON.parse(localStorage.getItem(ARRANGEMENTS_KEY)) || []; }
-    catch { return []; }
-  }
-
-  function saveArrangement(arr) {
-    const list = getArrangements();
-    if (!arr.id) arr.id = 'arr_' + Date.now();
-    const idx = list.findIndex(a => a.id === arr.id);
-    if (idx >= 0) list[idx] = arr; else list.push(arr);
-    localStorage.setItem(ARRANGEMENTS_KEY, JSON.stringify(list));
-    return arr;
-  }
-
-  function deleteArrangement(id) {
-    const list = getArrangements().filter(a => a.id !== id);
-    localStorage.setItem(ARRANGEMENTS_KEY, JSON.stringify(list));
-  }
-
-  function getArrangement(id) {
-    return getArrangements().find(a => a.id === id) || null;
   }
 
   return {

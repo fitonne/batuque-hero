@@ -80,10 +80,21 @@ const Audio = (() => {
     }
   }
 
+  // Sons G partagent les fichiers du D correspondant si aucun son propre
+  const SOUND_FALLBACK = {
+    'surdo3_g':    'surdo3',
+    'caixa_g':     'caixa',
+    'repinique_g': 'repinique',
+  };
+
   // when: Web Audio timestamp (ac.currentTime). 0 = now. volume: 0.0–1.0.
   function playSound(instrumentId, soundIndex = 0, when = 0, volume = 1.0) {
     const ac = getCtx();
-    const instBufs = buffers[instrumentId];
+    let instBufs = buffers[instrumentId];
+    // Fallback vers le son D si le son G n'est pas chargé
+    if ((!instBufs || !instBufs[soundIndex]) && SOUND_FALLBACK[instrumentId]) {
+      instBufs = buffers[SOUND_FALLBACK[instrumentId]];
+    }
     if (!instBufs || !instBufs[soundIndex]) return;
     const source = ac.createBufferSource();
     source.buffer = instBufs[soundIndex];

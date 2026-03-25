@@ -287,6 +287,9 @@ const Game = (() => {
         showFeedback('BIEN !', '#2ecc71');
       }
     } else {
+      // Joue quand même le son de l'instrument (frappe dans le vide)
+      const defaultLane = group.lanes[0];
+      Audio.playSound(INSTRUMENTS[defaultLane].id, 0, 0, 0.7);
       combo = 0;
       showFeedback('RATÉ', '#e74c3c');
     }

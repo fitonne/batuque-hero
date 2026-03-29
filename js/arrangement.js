@@ -278,20 +278,26 @@ const Arrangement = (() => {
     document.getElementById('btn-arr-play').textContent = '⏹ Stop';
 
     const notes = buildNotes();
-    const ac = Audio.getCtx();
-    const acStart = ac.currentTime + 0.1;
     playStartWall = performance.now() + 100;
+    const totalMs = getTotalMs();
 
+    // Une note = un setTimeout → stop immédiat + volume lu en temps réel
     notes.forEach(note => {
-      const vol = (note.volume / 3) * (note.trackVolume !== undefined ? note.trackVolume : 1.0);
-      Audio.playSound(INSTRUMENTS[note.lane].id, note.soundIndex, acStart + note.timestamp / 1000, vol);
+      const t = setTimeout(() => {
+        if (!isPlaying) return;
+        const instId = INSTRUMENTS[note.lane].id;
+        const trackVol = (current.trackVolumes && current.trackVolumes[instId] !== undefined)
+          ? current.trackVolumes[instId] : 1.0;
+        Audio.playSound(instId, note.soundIndex, 0, (note.volume / 3) * trackVol);
+      }, note.timestamp + 100);
+      playTimeouts.push(t);
     });
 
-    const totalMs = getTotalMs();
     playTimeouts.push(setTimeout(stopPreview, totalMs + 300));
 
     // Playhead
     function animPlayhead() {
+      if (!isPlaying) return;
       const elapsed = performance.now() - playStartWall;
       const pct = Math.min(1, elapsed / totalMs) * 100;
       const ph = document.getElementById('arr-playhead');

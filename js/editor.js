@@ -12,18 +12,16 @@ const Editor = (() => {
   let playStep = 0;
 
   function createNew() {
-    rhythm = {
-      id: null,
-      name: '',
-      bpm: 100,
-      measures: 2,
-      subdivision: 16,
-      notes: []
-    };
+    rhythm = { id: null, name: '', bpm: 100, measures: 2, subdivision: 16, notes: [], trackVolumes: {} };
+    INSTRUMENTS.forEach(inst => { rhythm.trackVolumes[inst.id] = 1.0; });
   }
 
   function load(r) {
     rhythm = JSON.parse(JSON.stringify(r));
+    if (!rhythm.trackVolumes) rhythm.trackVolumes = {};
+    INSTRUMENTS.forEach(inst => {
+      if (rhythm.trackVolumes[inst.id] === undefined) rhythm.trackVolumes[inst.id] = 1.0;
+    });
   }
 
   function getTotalSteps() {
@@ -93,7 +91,27 @@ const Editor = (() => {
       const label = document.createElement('div');
       label.className = 'editor-row-label';
       label.style.borderLeft = `4px solid ${inst.color}`;
-      label.textContent = inst.name;
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'arr-label-name';
+      nameEl.textContent = inst.shortName;
+      label.appendChild(nameEl);
+
+      const vol = rhythm.trackVolumes && rhythm.trackVolumes[inst.id] !== undefined ? rhythm.trackVolumes[inst.id] : 1.0;
+      const volSlider = document.createElement('input');
+      volSlider.type = 'range';
+      volSlider.className = 'arr-vol-slider';
+      volSlider.min = 0; volSlider.max = 100;
+      volSlider.value = Math.round(vol * 100);
+      volSlider.title = `Volume ${inst.shortName}`;
+      volSlider.addEventListener('input', e => {
+        if (!rhythm.trackVolumes) rhythm.trackVolumes = {};
+        rhythm.trackVolumes[inst.id] = parseInt(e.target.value) / 100;
+      });
+      volSlider.addEventListener('click', e => e.stopPropagation());
+      volSlider.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+      label.appendChild(volSlider);
+
       row.appendChild(label);
 
       for (let s = 0; s < totalSteps; s++) {
@@ -177,7 +195,11 @@ const Editor = (() => {
     const tick = () => {
       rhythm.notes
         .filter(n => n.step === playStep)
-        .forEach(n => Audio.playSound(INSTRUMENTS[n.lane].id, n.soundIndex || 0, 0, (n.volume || 3) / 3));
+        .forEach(n => {
+          const trackVol = rhythm.trackVolumes && rhythm.trackVolumes[INSTRUMENTS[n.lane].id] !== undefined
+            ? rhythm.trackVolumes[INSTRUMENTS[n.lane].id] : 1.0;
+          Audio.playSound(INSTRUMENTS[n.lane].id, n.soundIndex || 0, 0, ((n.volume || 3) / 3) * trackVol);
+        });
       highlightStep(playStep);
       playStep = (playStep + 1) % totalSteps;
     };

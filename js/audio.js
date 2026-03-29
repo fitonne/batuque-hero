@@ -19,12 +19,13 @@ const Audio = (() => {
 
   // Sons disponibles dans le dossier /sounds/ du projet
   const SERVER_SOUNDS = {
-    'surdo1':     ['surdo1_0.wav', 'surdo1_1.wav'],
-    'surdo2':     ['surdo2_0.wav', 'surdo2_1.wav'],
-    'surdo3':     ['surdo3_0.wav', 'surdo3_1.wav'],
-    'caixa':      ['caixa_0.wav',  'caixa_1.wav'],
-    'repinique':  ['repinique_0.wav', 'repinique_1.wav'],
-    'agogo_low':  ['agogo_low_0.wav'],
+    'surdo1':     ['surdo1.mp3'],
+    'surdo2':     ['surdo2.mp3'],
+    'surdo3':     ['surdo3.mp3'],
+    'caixa':      ['caixa.mp3'],
+    'repinique':  ['repinique.mp3'],
+    'agogo_low':  ['agogo_G.mp3'],
+    'agogo_high': ['agogo_A.mp3'],
   };
 
   async function fetchAndStoreSound(instrumentId, index, filename) {

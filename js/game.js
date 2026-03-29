@@ -242,7 +242,8 @@ const Game = (() => {
     notes.forEach(note => {
       if (inactive.has(note.lane)) {
         const when = acStartTime + note.timestamp / 1000;
-        Audio.playSound(INSTRUMENTS[note.lane].id, note.soundIndex, when, note.volume / 3);
+        const vol = (note.volume / 3) * (note.trackVolume !== undefined ? note.trackVolume : 1.0);
+        Audio.playSound(INSTRUMENTS[note.lane].id, note.soundIndex, when, vol);
       }
     });
 

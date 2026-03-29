@@ -1052,6 +1052,44 @@ body.public-mode .btn-icon[data-action="play"] {
   border-bottom: 2px solid #2a2a40;
 }
 
+.arr-label-name {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Curseur de volume par piste */
+.arr-vol-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: #2a2a40;
+  outline: none;
+  cursor: pointer;
+}
+.arr-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid #fff2;
+}
+.arr-vol-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid #fff2;
+}
+
 .arr-header-label {
   background: var(--surface2);
   font-size: 0.7em;
@@ -1085,12 +1123,15 @@ body.public-mode .btn-icon[data-action="play"] {
   z-index: 5;
   background: var(--surface);
   border-right: 1px solid #2a2a40;
-  width: 72px;
-  min-width: 72px;
+  width: 86px;
+  min-width: 86px;
   flex-shrink: 0;
   display: flex;
-  align-items: center;
-  padding: 0 6px 0 8px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 3px;
+  padding: 4px 6px 4px 8px;
   font-size: 0.72em;
   font-weight: 700;
   white-space: nowrap;

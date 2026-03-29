@@ -22,20 +22,24 @@ const Arrangement = (() => {
       bpm: 100,
       cellSize: 2,    // mesures par case
       totalCells: 8,  // nombre de cases
-      grid: {}
+      grid: {},
+      trackVolumes: {}
     };
     INSTRUMENTS.forEach(inst => {
       current.grid[inst.id] = new Array(current.totalCells).fill(null);
+      current.trackVolumes[inst.id] = 1.0;
     });
   }
 
   function load(arr) {
     current = JSON.parse(JSON.stringify(arr));
+    if (!current.trackVolumes) current.trackVolumes = {};
     INSTRUMENTS.forEach(inst => {
       if (!current.grid[inst.id]) current.grid[inst.id] = [];
       while (current.grid[inst.id].length < current.totalCells) current.grid[inst.id].push(null);
       if (current.grid[inst.id].length > current.totalCells)
         current.grid[inst.id] = current.grid[inst.id].slice(0, current.totalCells);
+      if (current.trackVolumes[inst.id] === undefined) current.trackVolumes[inst.id] = 1.0;
     });
   }
 
@@ -77,11 +81,14 @@ const Arrangement = (() => {
             // Ne pas dépasser la fin de la case
             if (noteAbsMs >= cellStartMs + cellDurationMs) return;
 
+            const trackVol = (arr.trackVolumes && arr.trackVolumes[inst.id] !== undefined)
+              ? arr.trackVolumes[inst.id] : 1.0;
             notes.push({
               lane: laneIndex,
               timestamp: noteAbsMs,
               soundIndex: note.soundIndex || 0,
               volume: note.volume || 3,
+              trackVolume: trackVol,
               hit: false,
               missed: false,
               active: true,
@@ -153,7 +160,26 @@ const Arrangement = (() => {
       const label = document.createElement('div');
       label.className = 'arr-row-label';
       label.style.borderLeft = `4px solid ${inst.color}`;
-      label.textContent = inst.name;
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'arr-label-name';
+      nameEl.textContent = inst.shortName;
+      label.appendChild(nameEl);
+
+      const vol = current.trackVolumes[inst.id] !== undefined ? current.trackVolumes[inst.id] : 1.0;
+      const volSlider = document.createElement('input');
+      volSlider.type = 'range';
+      volSlider.className = 'arr-vol-slider';
+      volSlider.min = 0; volSlider.max = 100;
+      volSlider.value = Math.round(vol * 100);
+      volSlider.title = `Volume ${inst.shortName}`;
+      volSlider.addEventListener('input', e => {
+        current.trackVolumes[inst.id] = parseInt(e.target.value) / 100;
+      });
+      volSlider.addEventListener('click', e => e.stopPropagation());
+      volSlider.addEventListener('touchstart', e => e.stopPropagation(), { passive: true });
+      label.appendChild(volSlider);
+
       row.appendChild(label);
 
       const track = current.grid[inst.id] || [];
@@ -257,7 +283,8 @@ const Arrangement = (() => {
     playStartWall = performance.now() + 100;
 
     notes.forEach(note => {
-      Audio.playSound(INSTRUMENTS[note.lane].id, note.soundIndex, acStart + note.timestamp / 1000, note.volume / 3);
+      const vol = (note.volume / 3) * (note.trackVolume !== undefined ? note.trackVolume : 1.0);
+      Audio.playSound(INSTRUMENTS[note.lane].id, note.soundIndex, acStart + note.timestamp / 1000, vol);
     });
 
     const totalMs = getTotalMs();

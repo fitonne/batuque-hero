@@ -357,6 +357,9 @@ const App = (() => {
 
     document.getElementById('speed-slider').value = 100;
     document.getElementById('speed-display').textContent = '100';
+    const savedOffset = parseInt(localStorage.getItem('batuque_offset') || '0');
+    document.getElementById('offset-slider').value = savedOffset;
+    document.getElementById('offset-display').textContent = savedOffset;
     showScreen('game-setup');
   }
 
@@ -364,15 +367,20 @@ const App = (() => {
     document.getElementById('speed-slider').addEventListener('input', e => {
       document.getElementById('speed-display').textContent = e.target.value;
     });
+    document.getElementById('offset-slider').addEventListener('input', e => {
+      document.getElementById('offset-display').textContent = e.target.value;
+      localStorage.setItem('batuque_offset', e.target.value);
+    });
     document.getElementById('btn-start-game').addEventListener('click', () => {
       const groupIndices = [...document.querySelectorAll('.inst-toggle.selected')]
         .map(btn => parseInt(btn.dataset.groupIndex));
       if (groupIndices.length === 0) { alert('Sélectionne au moins un instrument !'); return; }
       const speed = parseInt(document.getElementById('speed-slider').value) / 100;
+      const offset = parseInt(document.getElementById('offset-slider').value);
       if (currentGameSource.type === 'rhythm') {
-        Game.setup(Storage.getRhythm(currentGameSource.id), groupIndices, speed);
+        Game.setup(Storage.getRhythm(currentGameSource.id), groupIndices, speed, offset);
       } else {
-        Game.setupArrangement(Storage.getArrangement(currentGameSource.id), groupIndices, speed);
+        Game.setupArrangement(Storage.getArrangement(currentGameSource.id), groupIndices, speed, offset);
       }
       showGameScreen();
       Game.start();
@@ -387,11 +395,12 @@ const App = (() => {
       const groupIndices = [...document.querySelectorAll('.inst-toggle.selected')]
         .map(btn => parseInt(btn.dataset.groupIndex));
       const speed = parseInt(document.getElementById('speed-slider').value) / 100;
+      const offset = parseInt(document.getElementById('offset-slider').value);
       Game.stop();
       if (currentGameSource.type === 'rhythm') {
-        Game.setup(Storage.getRhythm(currentGameSource.id), groupIndices, speed);
+        Game.setup(Storage.getRhythm(currentGameSource.id), groupIndices, speed, offset);
       } else {
-        Game.setupArrangement(Storage.getArrangement(currentGameSource.id), groupIndices, speed);
+        Game.setupArrangement(Storage.getArrangement(currentGameSource.id), groupIndices, speed, offset);
       }
       document.getElementById('game-over').classList.add('hidden');
       Game.start();

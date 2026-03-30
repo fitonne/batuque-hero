@@ -4,6 +4,7 @@ const Game = (() => {
   let laneToCol = {};            // lane index → colonne canvas
   let speedMultiplier = 1;
   let currentBpm = 100;          // BPM effectif (après speed multiplier)
+  let audioOffsetMs = 0;         // décalage son/visuel en ms (réglage utilisateur)
   let score = 0, combo = 0, maxCombo = 0;
   let countPerfect = 0, countGood = 0, countMiss = 0;
   let animFrame = null;
@@ -36,10 +37,11 @@ const Game = (() => {
 
   // ── Setup depuis un loop ─────────────────────────────────────────────────
 
-  function setup(rhythmData, groupIndices, speed) {
+  function setup(rhythmData, groupIndices, speed, offset = 0) {
     selectedGroupIndices = groupIndices;
     buildLayout(groupIndices);
     speedMultiplier = speed;
+    audioOffsetMs = offset;
     currentBpm = rhythmData.bpm * speed;
     score = 0; combo = 0; maxCombo = 0;
     countPerfect = 0; countGood = 0; countMiss = 0;
@@ -61,10 +63,11 @@ const Game = (() => {
 
   // ── Setup depuis un arrangement ──────────────────────────────────────────
 
-  function setupArrangement(arrangementData, groupIndices, speed) {
+  function setupArrangement(arrangementData, groupIndices, speed, offset = 0) {
     selectedGroupIndices = groupIndices;
     buildLayout(groupIndices);
     speedMultiplier = speed;
+    audioOffsetMs = offset;
     currentBpm = arrangementData.bpm * speed;
     score = 0; combo = 0; maxCombo = 0;
     countPerfect = 0; countGood = 0; countMiss = 0;
@@ -220,7 +223,9 @@ const Game = (() => {
     const countdownMs = 4 * beatMs;
     const preDelay = 0.08;
 
-    acStartTime = ac.currentTime + preDelay;
+    // audioOffsetMs > 0 : son en retard → avancer les sons
+    // audioOffsetMs < 0 : son en avance → retarder les sons
+    acStartTime = ac.currentTime + preDelay - audioOffsetMs / 1000;
     gameStartTime = performance.now() + preDelay * 1000;
     countdownEndTime = gameStartTime + countdownMs;
 

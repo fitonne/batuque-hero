@@ -26,6 +26,7 @@ const Audio = (() => {
     'repinique':  ['repinique.mp3'],
     'agogo_low':  ['agogo_G.mp3'],
     'agogo_high': ['agogo_A.mp3'],
+    'ganza':      ['ganza.mp3'],
   };
 
   async function fetchAndStoreSound(instrumentId, index, filename) {

@@ -9,6 +9,7 @@ const INSTRUMENTS = [
   { id: 'surdo3_g',     name: 'Surdo 3 G',      shortName: 'S3G',  color: '#c9a800' },  // 7 (nouveau)
   { id: 'caixa_g',      name: 'Caixa G',         shortName: 'CXG',  color: '#27ae60' },  // 8 (nouveau)
   { id: 'repinique_g',  name: 'Repinique G',    shortName: 'RPG',  color: '#2471a3' },  // 9 (nouveau)
+  { id: 'ganza',        name: 'Ganza',           shortName: 'GZ',   color: '#1abc9c' },  // 10 (nouveau)
 ];
 
 // Groupes d'instruments pour le sélecteur de jeu.
@@ -52,5 +53,12 @@ const INSTRUMENT_GROUPS = [
     shortName: 'AG↓↑',
     lanes: [5, 6],
     color: '#9b59b6',
+  },
+  {
+    id: 'ganza',
+    name: 'Ganza',
+    shortName: 'GZ',
+    lanes: [10],
+    color: '#1abc9c',
   },
 ];

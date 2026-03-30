@@ -220,9 +220,12 @@ const Game = (() => {
     const countdownMs = 4 * beatMs;
     const preDelay = 0.08;
 
-    // Décompte d'abord, puis les notes commencent
+    // Compensation latence audio (outputLatency = délai réel haut-parleurs)
+    const latencyMs = ((ac.outputLatency || 0) + (ac.baseLatency || 0)) * 1000;
+
+    // Son schedulé à acStartTime, visuels décalés de latencyMs → sync parfaite
     acStartTime = ac.currentTime + preDelay;
-    gameStartTime = performance.now() + preDelay * 1000;
+    gameStartTime = performance.now() + preDelay * 1000 + latencyMs;
     countdownEndTime = gameStartTime + countdownMs;
 
     // Décale tous les timestamps pour que les notes démarrent après le décompte

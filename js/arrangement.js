@@ -312,6 +312,9 @@ const Arrangement = (() => {
     playTimeouts.forEach(clearTimeout);
     playTimeouts = [];
     if (playheadRAF) { cancelAnimationFrame(playheadRAF); playheadRAF = null; }
+    // Coupe immédiatement tous les sons en cours
+    const ac = Audio.getCtx();
+    if (ac && ac.state === 'running') ac.suspend();
     const ph = document.getElementById('arr-playhead');
     if (ph) ph.style.left = '0%';
     const btn = document.getElementById('btn-arr-play');
